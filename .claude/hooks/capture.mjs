@@ -157,9 +157,18 @@ function main() {
   if (event === "response") {
     const text = input.last_assistant_message ?? "";
     const file = findSessionFile(sessionId) || createSessionFile(sessionId, now, model);
-    const content = fs.readFileSync(file, "utf8");
+    let content = fs.readFileSync(file, "utf8");
     const num = Math.max(countPrompts(content), 1);
-    fs.appendFileSync(file, entry("RESPONSE", num, sessionId, now, model, text));
+    // The first prompt of a session has no assistant message to read the model from yet,
+    // so the header may say "unknown". Fill it in once the model is known. Entries are never touched.
+    if (model !== "unknown") {
+      const headerEnd = content.indexOf("\n---\n", 4); // end of the YAML front matter
+      if (headerEnd > 0) {
+        const header = content.slice(0, headerEnd).replace(/^model: unknown$/m, `model: ${model}`);
+        content = header + content.slice(headerEnd);
+      }
+    }
+    fs.writeFileSync(file, content + entry("RESPONSE", num, sessionId, now, model, text));
   }
 }
 
