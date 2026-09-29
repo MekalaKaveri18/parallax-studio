@@ -48,7 +48,7 @@ function Hero() {
         <Sparkles className="size-3.5 text-accent" /> 18 cinematic camera moves · free live preview
       </p>
       <h1 className="mx-auto max-w-3xl text-4xl font-semibold tracking-tight text-balance sm:text-6xl">
-        Generate a frame. <span className="brand-gradient bg-clip-text text-transparent">Direct the camera.</span>
+        Generate a frame. <span className="brand-text">Direct the camera.</span>
       </h1>
       <p className="mx-auto mt-4 max-w-xl text-white/60 text-balance">
         Create images from a prompt, then turn any still into a shot with dolly, orbit and crash-zoom moves.

@@ -75,7 +75,14 @@ body {
 }
 
 .brand-gradient {
-  background: linear-gradient(120deg, #ffb38a 0%, #ff7eb6 35%, #a594ff 70%, #6ee7f9 100%);
+  background-image: linear-gradient(120deg, #ffb38a 0%, #ff7eb6 35%, #a594ff 70%, #6ee7f9 100%);
+}
+
+.brand-text {
+  background-image: linear-gradient(120deg, #ffb38a 0%, #ff7eb6 35%, #a594ff 70%, #6ee7f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 /* ---------------------------------------------------------------------------
@@ -95,8 +102,10 @@ body {
   animation-direction: alternate;
 }
 
+/* Paused tiles show the clean still, not the first keyframe (which may be blurred/offset). */
 .motion.paused {
-  animation-play-state: paused;
+  animation-name: none;
+  transform: scale(1.02);
 }
 
 @media (prefers-reduced-motion: reduce) {
