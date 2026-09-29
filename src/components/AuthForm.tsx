@@ -5,8 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
-import { SIGNUP_BONUS } from "@/lib/presets";
-import { useStore } from "@/lib/store";
 import { seededImage } from "@/lib/utils";
 import { Logo } from "./Nav";
 import { MotionMedia } from "./MotionMedia";
@@ -22,7 +20,6 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const params = useSearchParams();
   const next = safeNext(params.get("next"));
-  const guestAssets = useStore((s) => (s.owner ? 0 : s.assets.length));
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -71,15 +68,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <h1 className="text-2xl font-semibold tracking-tight">{isUp ? "Create your account" : "Welcome back"}</h1>
           <p className="mt-1.5 text-sm text-white/50">
             {isUp
-              ? `Free forever. Get +${SIGNUP_BONUS} bonus credits and keep your work on every device.`
+              ? "Free forever. Takes ten seconds."
               : "Sign in to pick up where you left off."}
           </p>
-
-          {guestAssets > 0 && (
-            <p className="mt-4 rounded-xl border border-accent/25 bg-accent/10 px-3 py-2 text-xs text-white/80">
-              The {guestAssets} item{guestAssets > 1 ? "s" : ""} you made as a guest will be saved to your account.
-            </p>
-          )}
 
           <div className="mt-6 space-y-3">
             {isUp && (
@@ -174,7 +165,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/20 to-transparent" />
         <div className="absolute bottom-10 left-10 right-10">
           <p className="text-2xl font-semibold tracking-tight">Generate a frame. Direct the camera.</p>
-          <p className="mt-2 text-sm text-white/60">18 cinematic moves, free live preview, and your library everywhere you sign in.</p>
+          <p className="mt-2 text-sm text-white/60">18 cinematic camera moves with a free live preview.</p>
         </div>
       </div>
     </div>
