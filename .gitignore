@@ -13,3 +13,12 @@ dist/
 .claude/settings.local.json
 
 # NOTE: .agent-logs/ is intentionally NOT ignored. It ships with the repo.
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
