@@ -211,6 +211,9 @@ export function Nav() {
         </nav>
         <div className="flex items-center gap-2">
           <QueueMenu />
+          <Link href="/mcp" className="hidden text-sm text-white/60 hover:text-white lg:block">
+            MCP
+          </Link>
           <Link href="/pricing" className="hidden text-sm text-white/60 hover:text-white md:block">
             Pricing
           </Link>

@@ -17,6 +17,7 @@ const COLUMNS = [
       { href: "/", label: "Explore feed" },
       { href: "/library", label: "Your library" },
       { href: "/pricing", label: "Pricing" },
+      { href: "/mcp", label: "Claude MCP connector" },
     ],
   },
   {

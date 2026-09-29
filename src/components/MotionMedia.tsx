@@ -56,9 +56,19 @@ export function MotionMedia({
   force,
   loading = "lazy",
 }: Props) {
-  const [loaded, setLoaded] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const imgRef = useRef<HTMLImageElement>(null);
+  // Track *which* src finished loading so a new src never inherits the old state.
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const loaded = loadedSrc === src;
+  const failed = failedSrc === src;
+  const imgRef = useRef<HTMLImageElement | null>(null);
+
+  // Cached images can finish loading before React attaches onLoad (e.g. during
+  // hydration), so also check completion when the element mounts.
+  const attachImg = (el: HTMLImageElement | null) => {
+    imgRef.current = el;
+    if (el && el.complete && el.naturalWidth > 0 && loadedSrc !== src) setLoadedSrc(src);
+  };
   const animRef = useRef<Animation | null>(null);
 
   const reduced = usePrefersReducedMotion();
@@ -111,13 +121,13 @@ export function MotionMedia({
       ) : (
         // eslint-disable-next-line @next/next/no-img-element -- remote placeholder + data URLs; next/image adds nothing here
         <img
-          ref={imgRef}
+          ref={attachImg}
           src={src}
           alt={alt}
           loading={loading}
           draggable={false}
-          onLoad={() => setLoaded(true)}
-          onError={() => setFailed(true)}
+          onLoad={() => setLoadedSrc(src)}
+          onError={() => setFailedSrc(src)}
           style={
             rest
               ? {
