@@ -8,7 +8,7 @@ import { Coins, Compass, Film, ImageIcon, Layers, Loader2, LogOut, Sparkles } fr
 import { signOut, useSession } from "@/lib/auth-client";
 import { selectActiveJobs, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { motionOf, planOf } from "@/lib/presets";
+import { motionOf, planOf, SIGNUP_BONUS } from "@/lib/presets";
 
 const LINKS = [
   { href: "/", label: "Explore", icon: Compass },
@@ -130,9 +130,10 @@ function AccountMenu() {
         </Link>
         <Link
           href={`/sign-up${next}`}
+          title={`Create a free account and get ${SIGNUP_BONUS} bonus credits`}
           className="hidden rounded-full bg-white px-3 py-1.5 text-sm font-medium text-ink-950 hover:bg-accent sm:block"
         >
-          Sign up
+          Sign up · +{SIGNUP_BONUS}
         </Link>
       </div>
     );

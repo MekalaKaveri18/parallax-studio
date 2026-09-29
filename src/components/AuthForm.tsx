@@ -5,9 +5,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { signIn, signUp } from "@/lib/auth-client";
+import { SIGNUP_BONUS } from "@/lib/presets";
+import { useStore } from "@/lib/store";
 import { seededImage } from "@/lib/utils";
 import { Logo } from "./Nav";
 import { MotionMedia } from "./MotionMedia";
+import { toast } from "./Toast";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -54,6 +57,11 @@ export function AuthForm({ mode }: { mode: Mode }) {
       );
       return;
     }
+    if (isUp) {
+      // One-time welcome grant; only reachable from a successful new sign-up.
+      useStore.getState().addCredits(SIGNUP_BONUS);
+      toast({ tone: "success", title: `Welcome to Parallax! +${SIGNUP_BONUS} credits added` });
+    }
     router.push(next);
     router.refresh();
   }
@@ -68,7 +76,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <h1 className="text-2xl font-semibold tracking-tight">{isUp ? "Create your account" : "Welcome back"}</h1>
           <p className="mt-1.5 text-sm text-white/50">
             {isUp
-              ? "Free forever. Takes ten seconds."
+              ? `Free forever. Get ${SIGNUP_BONUS} bonus credits when you join.`
               : "Sign in to pick up where you left off."}
           </p>
 
