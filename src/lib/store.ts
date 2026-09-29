@@ -11,6 +11,8 @@ export type SubmitResult = { ok: true; jobId: string } | { ok: false; reason: "c
 
 interface State {
   hydrated: boolean;
+  /** Account id this local state belongs to; null while browsing as a guest. */
+  owner: string | null;
   credits: number;
   plan: PlanId;
   jobs: Job[];
@@ -60,6 +62,7 @@ const safeStorage = createJSONStorage(() => ({
 }));
 
 const initial = {
+  owner: null as string | null,
   credits: STARTING_CREDITS,
   plan: "free" as PlanId,
   jobs: [] as Job[],
@@ -239,7 +242,7 @@ export const useStore = create<State>()(
       version: 1,
       storage: safeStorage,
       skipHydration: true,
-      partialize: (s) => ({ credits: s.credits, plan: s.plan, jobs: s.jobs, assets: s.assets }),
+      partialize: (s) => ({ owner: s.owner, credits: s.credits, plan: s.plan, jobs: s.jobs, assets: s.assets }),
       onRehydrateStorage: () => () => useStore.setState({ hydrated: true }),
     },
   ),

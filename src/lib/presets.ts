@@ -104,6 +104,8 @@ export function videoCost(duration: number) {
 }
 
 export const STARTING_CREDITS = 120;
+/** Extra credits for creating an account. */
+export const SIGNUP_BONUS = 50;
 
 export interface Plan {
   id: PlanId;

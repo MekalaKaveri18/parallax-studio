@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { Coins, Film, ImageIcon, Layers, Loader2, Sparkles, Compass } from "lucide-react";
+import { Coins, Compass, Film, ImageIcon, Layers, Loader2, LogOut, Sparkles } from "lucide-react";
+import { signOut, useSession } from "@/lib/auth-client";
 import { selectActiveJobs, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import { motionOf } from "@/lib/presets";
+import { motionOf, planOf } from "@/lib/presets";
 
 const LINKS = [
   { href: "/", label: "Explore", icon: Compass },
@@ -92,6 +93,99 @@ function CreditsPill() {
   );
 }
 
+function useClickOutside(open: boolean, close: () => void) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!ref.current?.contains(e.target as Node)) close();
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && close();
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open, close]);
+  return ref;
+}
+
+function AccountMenu() {
+  const { data: session, isPending } = useSession();
+  const plan = useStore((s) => s.plan);
+  const router = useRouter();
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const ref = useClickOutside(open, () => setOpen(false));
+
+  if (isPending) return <div className="size-8 rounded-full bg-white/5" />;
+
+  if (!session) {
+    const next = pathname.startsWith("/sign-") ? "" : `?next=${encodeURIComponent(pathname)}`;
+    return (
+      <div className="flex items-center gap-1">
+        <Link href={`/sign-in${next}`} className="rounded-full px-3 py-1.5 text-sm text-white/70 hover:text-white">
+          Sign in
+        </Link>
+        <Link
+          href={`/sign-up${next}`}
+          className="hidden rounded-full bg-white px-3 py-1.5 text-sm font-medium text-ink-950 hover:bg-accent sm:block"
+        >
+          Sign up
+        </Link>
+      </div>
+    );
+  }
+
+  const { name, email } = session.user;
+  const initials = (name || email).split(/[\s@.]+/).filter(Boolean).slice(0, 2).map((w) => w[0]!.toUpperCase()).join("");
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Account menu"
+        aria-expanded={open}
+        className="brand-gradient grid size-8 place-items-center rounded-full text-xs font-bold text-accent-ink ring-2 ring-transparent transition hover:ring-white/30"
+      >
+        {initials}
+      </button>
+      {open && (
+        <div className="animate-fade-in absolute right-0 top-11 w-64 rounded-2xl border border-white/10 bg-ink-850 p-2 shadow-2xl">
+          <div className="px-3 py-2">
+            <div className="truncate text-sm font-medium">{name || "Your account"}</div>
+            <div className="truncate text-xs text-white/50">{email}</div>
+            <div className="mt-2 inline-block rounded-full bg-accent/15 px-2 py-0.5 text-[11px] font-medium text-accent">
+              {planOf(plan).name} plan
+            </div>
+          </div>
+          <div className="my-1 h-px bg-white/5" />
+          <Link href="/library" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-white/80 hover:bg-white/5">
+            Library
+          </Link>
+          <Link href="/pricing" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm text-white/80 hover:bg-white/5">
+            Plans & credits
+          </Link>
+          <button
+            onClick={async () => {
+              setOpen(false);
+              await signOut();
+              // Don't leave this account's library on a shared browser.
+              useStore.getState().reset();
+              router.push("/");
+              router.refresh();
+            }}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-white/80 hover:bg-white/5"
+          >
+            <LogOut className="size-4" /> Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Nav() {
   const pathname = usePathname();
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
@@ -121,6 +215,7 @@ export function Nav() {
             Pricing
           </Link>
           <CreditsPill />
+          <AccountMenu />
         </div>
       </div>
     </header>
