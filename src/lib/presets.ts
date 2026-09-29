@@ -51,7 +51,7 @@ export function styleOf(id: string | undefined) {
 export type MotionCategory = "Camera" | "Zoom" | "Orbit" | "Energy" | "Mood";
 
 export interface MotionPreset {
-  /** Matches a `.motion-<id>` keyframe class in globals.css. */
+  /** Key into the motion engine in lib/motion.ts. */
   id: string;
   name: string;
   category: MotionCategory;
