@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { ArrowRight, ArrowUpRight, Film, Play, RefreshCw, Sparkles, Upload } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowRight, ArrowUpRight, Eye, Film, ImageIcon, Play, RefreshCw, Sparkles, Upload } from "lucide-react";
+import { Masonry } from "@/components/Masonry";
 import { MotionMedia } from "@/components/MotionMedia";
-import { FEED, PROMPT_IDEAS, type FeedItem } from "@/lib/feed";
+import { FEED, FEED_LIMIT, generatedFeed, PROMPT_IDEAS, type FeedItem } from "@/lib/feed";
 import { imageHref, videoHref } from "@/lib/links";
 import { aspectCss, aspectOf, MOTIONS, motionOf, styleOf } from "@/lib/presets";
-import { seededImage } from "@/lib/utils";
+import { cn, seededImage } from "@/lib/utils";
 
 export function Explore() {
   return (
     <div className="mx-auto max-w-[1440px] px-4 sm:px-6">
       <Hero />
       <MotionRail />
+      <HowItWorks />
       <Feed />
     </div>
   );
@@ -138,16 +140,111 @@ function MotionCard({ id }: { id: string }) {
   );
 }
 
+const FEED_FILTERS = [
+  { id: "all", label: "All" },
+  { id: "motion", label: "With motion" },
+  { id: "still", label: "Stills" },
+] as const;
+type FeedFilter = (typeof FEED_FILTERS)[number]["id"];
+
+const PAGE = 24;
+const feedRatio = (item: FeedItem) => {
+  const { w, h } = aspectOf(item.aspect);
+  return h / w;
+};
+const feedKey = (item: FeedItem) => item.id;
+
 function Feed() {
+  const [filter, setFilter] = useState<FeedFilter>("all");
+  const [count, setCount] = useState(PAGE);
+  const sentinel = useRef<HTMLDivElement>(null);
+
+  const all = useMemo(() => [...FEED, ...generatedFeed(FEED.length, FEED_LIMIT - FEED.length)], []);
+  const filtered = useMemo(
+    () => all.filter((i) => filter === "all" || (filter === "motion" ? i.motionId : !i.motionId)),
+    [all, filter],
+  );
+  const shown = filtered.slice(0, count);
+  const done = shown.length >= filtered.length;
+
+  // Load the next page shortly before the user reaches the bottom.
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || done) return;
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) setCount((c) => c + PAGE);
+    }, { rootMargin: "800px 0px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [done, filter]);
+
   return (
-    <section className="mb-16 mt-12">
-      <div className="mb-4">
-        <h2 className="text-lg font-semibold">From the community</h2>
-        <p className="text-sm text-white/50">Remix any prompt with one click.</p>
+    <section className="mb-20 mt-16">
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-semibold">From the community</h2>
+          <p className="text-sm text-white/50">Hover to play. Remix any prompt with one click.</p>
+        </div>
+        <div className="flex rounded-full bg-white/5 p-1">
+          {FEED_FILTERS.map((f) => (
+            <button
+              key={f.id}
+              onClick={() => {
+                setFilter(f.id);
+                setCount(PAGE);
+              }}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs transition",
+                filter === f.id ? "bg-white text-ink-950" : "text-white/60 hover:text-white",
+              )}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="columns-2 gap-3 md:columns-3 lg:columns-4 [&>*]:mb-3 [&>*]:break-inside-avoid">
-        {FEED.map((item) => (
-          <FeedCard key={item.id} item={item} />
+
+      <Masonry items={shown} getKey={feedKey} getRatio={feedRatio} render={(item) => <FeedCard item={item} />} />
+
+      {done ? (
+        <div className="mt-10 flex flex-col items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.02] px-6 py-10 text-center">
+          <p className="text-sm text-white/60">You&apos;ve reached the end of the feed.</p>
+          <Link href="/create/image" className="flex items-center gap-1.5 rounded-full bg-accent px-4 py-2 text-sm font-semibold text-accent-ink hover:bg-white">
+            Make something new <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      ) : (
+        <div ref={sentinel} className="mt-6 flex justify-center">
+          <button onClick={() => setCount((c) => c + PAGE)} className="rounded-full bg-white/5 px-4 py-2 text-xs text-white/60 hover:bg-white/10 hover:text-white">
+            Load more
+          </button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function HowItWorks() {
+  const steps = [
+    { icon: ImageIcon, title: "Generate a frame", body: "Write a prompt, pick one of 10 styles and an aspect ratio. See the credit cost before you run it." },
+    { icon: Eye, title: "Preview the move, free", body: "Try 18 camera moves live on your own image. Nothing is charged until you like what you see." },
+    { icon: Film, title: "Render and remix", body: "Generate the shot, then reuse the prompt, swap the motion, or animate another still from your library." },
+  ];
+  return (
+    <section className="mt-16">
+      <h2 className="text-lg font-semibold">How it works</h2>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {steps.map((s, i) => (
+          <div key={s.title} className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+            <div className="flex items-center gap-3">
+              <span className="grid size-9 place-items-center rounded-xl bg-accent/15 text-accent">
+                <s.icon className="size-4" />
+              </span>
+              <span className="text-xs font-medium tabular-nums text-white/30">0{i + 1}</span>
+            </div>
+            <h3 className="mt-4 font-medium">{s.title}</h3>
+            <p className="mt-1 text-sm leading-relaxed text-white/50">{s.body}</p>
+          </div>
         ))}
       </div>
     </section>

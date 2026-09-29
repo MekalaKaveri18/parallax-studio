@@ -4,11 +4,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { Coins, Compass, Film, ImageIcon, Layers, Loader2, LogOut, Sparkles } from "lucide-react";
+import { Coins, Compass, Film, ImageIcon, Layers, Loader2, LogOut } from "lucide-react";
 import { signOut, useSession } from "@/lib/auth-client";
 import { selectActiveJobs, useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { motionOf, planOf, SIGNUP_BONUS } from "@/lib/presets";
+import { LogoMark } from "./LogoMark";
 
 const LINKS = [
   { href: "/", label: "Explore", icon: Compass },
@@ -19,11 +20,9 @@ const LINKS = [
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-      <span className="brand-gradient grid size-7 place-items-center rounded-lg text-accent-ink">
-        <Sparkles className="size-4" strokeWidth={2.5} />
-      </span>
-      <span className="text-[15px]">Parallax</span>
+    <Link href="/" className="flex items-center gap-2" aria-label="Parallax home">
+      <LogoMark size={28} />
+      <span className="text-[17px] font-semibold tracking-[-0.03em]">parallax</span>
     </Link>
   );
 }

@@ -8,7 +8,9 @@ import { AlertTriangle, Film, ImageIcon, Layers, RotateCcw, Search, X } from "lu
 import { AssetCard, JobCard } from "@/components/AssetCard";
 import { openViewer } from "@/components/AssetViewer";
 import { toast } from "@/components/Toast";
-import { aspectCss } from "@/lib/presets";
+import { Masonry } from "@/components/Masonry";
+import { aspectCss, aspectOf } from "@/lib/presets";
+import type { Asset, Job } from "@/lib/types";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,13 @@ const FILTERS = [
 ] as const;
 
 type Filter = (typeof FILTERS)[number]["id"];
+
+type Tile = { type: "job"; job: Job } | { type: "asset"; asset: Asset };
+const tileKey = (t: Tile) => (t.type === "job" ? t.job.id : t.asset.id);
+const tileRatio = (t: Tile) => {
+  const { w, h } = aspectOf(t.type === "job" ? t.job.params.aspect : t.asset.aspect);
+  return h / w;
+};
 
 export function Library() {
   const params = useSearchParams();
@@ -147,14 +156,22 @@ export function Library() {
       ) : shown.length === 0 && (filter !== "all" || query) ? (
         <p className="py-20 text-center text-sm text-white/40">No matches. Try another filter or search.</p>
       ) : (
-        <div className="columns-2 gap-3 md:columns-3 lg:columns-4 xl:columns-5 [&>*]:mb-3 [&>*]:break-inside-avoid">
-          {filter === "all" &&
-            !query &&
-            active.map((j) => <JobCard key={j.id} job={j} aspect={aspectCss(j.params.aspect)} />)}
-          {shown.map((a) => (
-            <AssetCard key={a.id} asset={a} siblings={ids} />
-          ))}
-        </div>
+        <Masonry
+          items={[
+            ...(filter === "all" && !query ? active.map((job) => ({ type: "job" as const, job })) : []),
+            ...shown.map((asset) => ({ type: "asset" as const, asset })),
+          ]}
+          getKey={tileKey}
+          getRatio={tileRatio}
+          minColumnWidth={220}
+          render={(t) =>
+            t.type === "job" ? (
+              <JobCard job={t.job} aspect={aspectCss(t.job.params.aspect)} />
+            ) : (
+              <AssetCard asset={t.asset} siblings={ids} />
+            )
+          }
+        />
       )}
     </div>
   );
