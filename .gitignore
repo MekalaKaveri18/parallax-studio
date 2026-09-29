@@ -1,0 +1,15 @@
+# deps / build
+node_modules/
+.next/
+out/
+dist/
+.vercel/
+
+# env
+.env
+.env*.local
+
+# local-only Claude settings (project .claude/settings.json IS committed — it holds the capture hook)
+.claude/settings.local.json
+
+# NOTE: .agent-logs/ is intentionally NOT ignored. It ships with the repo.
