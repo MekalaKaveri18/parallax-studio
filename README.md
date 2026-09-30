@@ -1,6 +1,6 @@
 # Parallax
 
-**Generate a frame. Direct the camera.** A Higgsfield-inspired AI creative studio, rebuilt in 24 hours. It focuses on one idea: turning a still image into a cinematic shot with a camera move you can preview free before you spend anything.
+**Generate a frame. Direct the camera.** A Higgsfield-inspired AI creative studio. It focuses on one idea: turning a still image into a cinematic shot with a camera move you can preview free before you spend anything.
 
 - **Live:** https://parallax-studio-rho.vercel.app
 - **Agent logs:** [`.agent-logs/`](.agent-logs/) (every prompt and response, captured by hooks, committed as the work happened). See [`CAPTURE-TEST.md`](CAPTURE-TEST.md).
